@@ -21,5 +21,13 @@ declare module 'vitest' {
       shouldSkip: boolean
       apiKey: string | undefined
     }
+    ['provider-language-model']: {
+      shouldSkip: boolean
+      credentials: AwsCredentialIdentity | undefined
+    }
+    ['provider-mantle']: {
+      shouldSkip: boolean
+      apiKey: string | undefined
+    }
   }
 }

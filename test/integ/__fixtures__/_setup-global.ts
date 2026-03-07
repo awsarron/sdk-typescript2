@@ -69,9 +69,17 @@ export async function setup(project: TestProject): Promise<void> {
   project.provide('isBrowser', project.isBrowserEnabled())
   project.provide('isCI', isCI)
   project.provide('provider-openai', await getOpenAITestContext(isCI))
-  project.provide('provider-bedrock', await getBedrockTestContext(isCI))
+
+  const bedrockCtx = await getBedrockTestContext(isCI)
+  project.provide('provider-bedrock', bedrockCtx)
+
   project.provide('provider-anthropic', await getAnthropicTestContext(isCI))
   project.provide('provider-gemini', await getGeminiTestContext(isCI))
+
+  // LanguageModel adapter tests reuse Bedrock credentials via @ai-sdk/amazon-bedrock
+  project.provide('provider-language-model', bedrockCtx)
+
+  project.provide('provider-mantle', getMantleTestContext())
 }
 
 async function getOpenAITestContext(isCI: boolean): Promise<ProvidedContext['provider-openai']> {
@@ -148,4 +156,17 @@ async function getGeminiTestContext(_isCI: boolean): Promise<ProvidedContext['pr
     apiKey: apiKey,
     shouldSkip: shouldSkip,
   }
+}
+
+function getMantleTestContext(): ProvidedContext['provider-mantle'] {
+  const apiKey = process.env.BEDROCK_API_KEY
+  const shouldSkip = !apiKey
+
+  if (shouldSkip) {
+    console.log('⏭️  Bedrock Mantle API key not available - integration tests will be skipped')
+  } else {
+    console.log('⏭️  Bedrock Mantle API key available - integration tests will run')
+  }
+
+  return { apiKey, shouldSkip }
 }
